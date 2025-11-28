@@ -1,0 +1,39 @@
+language: GHC2021
+
+default-extensions:
+  - DataKinds
+  - DeriveAnyClass
+  - DerivingStrategies
+  - DerivingVia
+  - GADTs
+  - LambdaCase
+  - MultiWayIf
+  - OverloadedStrings
+  - QuasiQuotes
+  - RecordWildCards
+  - TemplateHaskell
+  - TypeFamilies
+  - UndecidableInstances
+
+extra-source-files: cabal.yaml
+
+executables:
+  min264:
+    source-dirs: .
+    main: min264.hs
+    dependencies:
+      - base
+      - bytestring
+      - base16-bytestring
+      - conduit
+      - conduit-extra
+      - containers
+      - time
+      - deepseq
+      - text
+      - lens
+      - proto-lens-runtime
+      - proto-lens
+      - vector
+      - zeromq4-haskell
+      - exceptions

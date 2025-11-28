@@ -18,9 +18,9 @@ default-extensions:
 extra-source-files: cabal.yaml
 
 executables:
-  min264:
+  dump-savant-proto:
     source-dirs: .
-    main: min264.hs
+    main: main.hs
     dependencies:
       - base
       - bytestring

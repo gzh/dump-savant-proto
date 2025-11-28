@@ -1,60 +1,46 @@
-module Zt where
-
 import Control.Monad
 import Control.Monad.Catch
-import Control.Concurrent
 import Data.List.NonEmpty ( NonEmpty((:|)) )
 import Data.ByteString qualified as BS
+import Data.ByteString.Char8 qualified as BSC8
 import Data.ByteString.Base16 qualified as BSB16
 
---import System.ZMQ4 (ZMQ_PUB)
-import System.ZMQ4
-
-import Proto.Xx
-import Proto.Xx_Fields
-import Proto.SavantRs
-import Proto.SavantRs_Fields
+import System.Environment
 import Data.ProtoLens.Encoding
-import Data.ProtoLens.Message
-import Control.Lens
 
-tsend :: IO ()
-tsend = withContext $ \ctx -> do
-  withSocket ctx Pub $ \s -> do
-    let addr = "tcp://0.0.0.0:5544"
-    bracket (bind s addr) (const $ unbind s addr) $ const $ do
-      forever $ do
-        let xx :: XxWire
-            xx = defMessage
-                 & memo .~ "qweqwe"
-                 & ts .~ 100500
-        sendMulti s $ "topic1" :| ["somethingelse", encodeMessage xx]
-        threadDelay 1_000_000
+import System.ZMQ4
+import Proto.SavantRs
 
-trecv :: String -> IO ()
-trecv label = withContext $ \ctx -> do
-  withSocket ctx Sub $ \s -> do
-    let addr = "tcp://localhost:5544"
+runRecv :: String -> IO ()
+runRecv addr = withContext $ \ctx -> do
+  withSocket ctx Sub $ \s ->
     bracket (connect s addr) (const $ unbind s addr) $ const $ do
-      subscribe s "topic1"
-      forever $ do
-        msgs <- receiveMulti s
-        putStrLn $ label <> show msgs
-
-
-trecv1 :: String -> IO ()
-trecv1 label = withContext $ \ctx -> do
-  withSocket ctx Sub $ \s -> do
-    let addr = --"ipc:///home/gzh/projects/viinex-docker-compose-demo/zmq-sockets/viinex-zmq.ipc"
-               "ipc:///home/gzh/repos/perception/rtsp_zmq_sockets/input-video.ipc"
-    bracket (connect s addr) (const $ unbind s addr) $ const $ do
-      putStrLn "qq"
       subscribe s ""
       forever $ do
         (cam : pb : msgs) <- receiveMulti s
-        putStrLn $ show cam
+        putStrLn $ mconcat ["------ message:"
+                           ," topic: " <> show cam
+                           ,", content parts: "
+                           ,show $ length msgs
+                           ]
         let emsg = decodeMessage pb
         case emsg of
-          Left err -> putStrLn $ "err: " <> err
-          Right msg -> putStrLn $ show (msg :: Proto.SavantRs.Message)
-        putStrLn $ label <> show (map (BSB16.encode . BS.take 64) msgs)
+          Left err -> putStrLn $ "cannot decode pb part: " <> err
+          Right msg -> putStrLn $ show @Message msg
+        mapM (putStrLn . showPart) msgs
+
+showPart :: BS.ByteString -> String
+showPart bs =
+  let displaylen = 40
+      hex = BSC8.unpack $ BSB16.encode $ BS.take displaylen bs
+      len = "(len=" <> show (BS.length bs) <> ")"
+      mellipsis = if BS.length bs > displaylen then "..." else " "
+  in hex <> mellipsis <> len
+
+main = do
+  args <- getArgs
+  maddr <- lookupEnv "ZMQ_ENDPOINT"
+  case (args, maddr) of
+    (addr:_, _) -> runRecv addr
+    (_, Just addr) -> runRecv addr
+    _ -> putStrLn "Please specify ZMQ_ENDPOINT either as argv[1] or as env var"

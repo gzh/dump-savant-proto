@@ -1,0 +1,51 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.37.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           dump-savant-proto
+version:        0.0.0
+build-type:     Simple
+extra-source-files:
+    cabal.yaml
+
+executable dump-savant-proto
+  main-is: main.hs
+  other-modules:
+      Proto.SavantRs
+      Proto.SavantRs_Fields
+      Paths_dump_savant_proto
+  hs-source-dirs:
+      ./
+  default-extensions:
+      DataKinds
+      DeriveAnyClass
+      DerivingStrategies
+      DerivingVia
+      GADTs
+      LambdaCase
+      MultiWayIf
+      OverloadedStrings
+      QuasiQuotes
+      RecordWildCards
+      TemplateHaskell
+      TypeFamilies
+      UndecidableInstances
+  build-depends:
+      base
+    , base16-bytestring
+    , bytestring
+    , conduit
+    , conduit-extra
+    , containers
+    , deepseq
+    , exceptions
+    , lens
+    , proto-lens
+    , proto-lens-runtime
+    , text
+    , time
+    , vector
+    , zeromq4-haskell
+  default-language: GHC2021

@@ -14,7 +14,7 @@ import Proto.SavantRs
 runRecv :: String -> IO ()
 runRecv addr = withContext $ \ctx -> do
   withSocket ctx Sub $ \s ->
-    bracket (connect s addr) (const $ unbind s addr) $ const $ do
+    bracket (connect s addr) (const $ disconnect s addr) $ const $ do
       subscribe s ""
       forever $ do
         (cam : pb : msgs) <- receiveMulti s
@@ -27,7 +27,7 @@ runRecv addr = withContext $ \ctx -> do
         case emsg of
           Left err -> putStrLn $ "cannot decode pb part: " <> err
           Right msg -> putStrLn $ show @Message msg
-        mapM (putStrLn . showPart) msgs
+        mapM_ (putStrLn . showPart) msgs
 
 showPart :: BS.ByteString -> String
 showPart bs =

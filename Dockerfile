@@ -26,4 +26,6 @@ RUN apt-get update && \
 
 COPY --from=builder /dump-savant-proto/dist/dump-savant-proto /usr/local/bin/dump-savant-proto
 
+USER 1001
+
 ENTRYPOINT ["/usr/local/bin/dump-savant-proto"]
